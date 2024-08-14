@@ -1,0 +1,29 @@
+name: Update User Records
+
+on:
+  repository_dispatch:
+    types: [new_test_result]
+
+jobs:
+  update-records:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update JSON file
+      run: |
+        content=$(cat user_records.json)
+        username="${{ github.event.client_payload.username }}"
+        new_record='{"date": "${{ github.event.client_payload.date }}", "score": ${{ github.event.client_payload.score }}, "questions": ${{ github.event.client_payload.questions }}}'
+        if echo "$content" | jq -e "has(\"$username\")" > /dev/null; then
+          updated_content=$(echo "$content" | jq ".$username += [$new_record]")
+        else
+          updated_content=$(echo "$content" | jq ". + {\"$username\": [$new_record]}")
+        fi
+        echo "$updated_content" > user_records.json
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add user_records.json
+        git commit -m "Update user records for ${{ github.event.client_payload.username }}"
+        git push
