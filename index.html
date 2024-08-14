@@ -65,31 +65,33 @@
             sendResultToGitHub();
         }
 
-        function sendResultToGitHub() {
-            const owner = 'jiushu520E';
-            const repo = 'online-test-records';
-            const event_type = 'new_test_result';
-            const token = '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';
+function sendResultToGitHub() {
+    const owner = 'jiushu520';  // 确保这里使用的是正确的 GitHub 用户名
+    const repo = 'online-test-records';
+    const event_type = 'new_test_result';
+    const token = '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';  // 确保这个 Token 是有效的并且有足够的权限
 
-            axios.post(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
-                event_type: event_type,
-                client_payload: {
-                    username: currentUser,
-                    date: new Date().toISOString().split('T')[0],
-                    score: score,
-                    questions: questions.length
-                }
-            }, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }).then(response => {
-                console.log('Results sent to GitHub');
-            }).catch(error => {
-                console.error('Error sending results to GitHub:', error);
-            });
+    axios.post(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
+        event_type: event_type,
+        client_payload: {
+            username: currentUser,
+            date: new Date().toISOString().split('T')[0],
+            score: score,
+            questions: questions.length
         }
+    }, {
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    }).then(response => {
+        console.log('Results sent to GitHub');
+        console.log('API response:', response);
+    }).catch(error => {
+        console.error('Error sending results to GitHub:', error);
+    });
+}
+
     </script>
 </body>
 </html>
