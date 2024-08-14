@@ -3,6 +3,7 @@ name: Update User Records
 on:
   repository_dispatch:
     types: [new_test_result]
+  workflow_dispatch: # 这行是添加手动触发的支持
 
 jobs:
   update-records:
