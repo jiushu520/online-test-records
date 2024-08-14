@@ -3,13 +3,14 @@ name: Update User Records
 on:
   repository_dispatch:
     types: [new_test_result]
-  workflow_dispatch: # 这行是添加手动触发的支持
+  workflow_dispatch: # 支持手动触发
 
 jobs:
   update-records:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
     - name: Update JSON file
       run: |
         content=$(cat user_records.json)
@@ -21,10 +22,16 @@ jobs:
           updated_content=$(echo "$content" | jq ". + {\"$username\": [$new_record]}")
         fi
         echo "$updated_content" > user_records.json
+
     - name: Commit changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add user_records.json
         git commit -m "Update user records for ${{ github.event.client_payload.username }}"
+        
+    - name: Push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 或者你自己的 PAT
+      run: |
         git push
