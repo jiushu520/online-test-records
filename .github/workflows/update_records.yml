@@ -29,9 +29,9 @@ jobs:
         git config --local user.name "GitHub Action"
         git add user_records.json
         git commit -m "Update user records for ${{ github.event.client_payload.username }}"
-        
+
     - name: Push changes
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # 或者你自己的 PAT
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # 这里是你的 Secret 名称
       run: |
         git push
