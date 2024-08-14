@@ -1,112 +1,32 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线测试系统</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-<body>
-    <h1>在线测试系统</h1>
-    <div id="login">
-        <input type="text" id="username" placeholder="输入用户名">
-        <button onclick="startTest()">开始测试</button>
-    </div>
-    <div id="test" style="display:none;">
-        <h2>问题: <span id="question"></span></h2>
-        <input type="text" id="answer" placeholder="输入答案">
-        <button onclick="submitAnswer()">提交答案</button>
-    </div>
-    <div id="result" style="display:none;">
-        <h2>测试结束</h2>
-        <p>得分: <span id="score"></span></p>
-    </div>
+function sendResultToGitHub() {
+    const owner = 'jiushu520';
+    const repo = 'online-test-records';
+    const event_type = 'new_test_result';
+    const token = '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';  // 使用新生成的 Token
 
-    <script>
-        let currentUser = '';
-        let questions = ['2+2=?', '3*4=?', '10-7=?'];
-        let answers = ['4', '12', '3'];
-        let currentQuestion = 0;
-        let score = 0;
-
-        function startTest() {
-            currentUser = document.getElementById('username').value;
-            if (currentUser) {
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('test').style.display = 'block';
-                showQuestion();
-            }
+    axios.post(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
+        event_type: event_type,
+        client_payload: {
+            username: currentUser,
+            date: new Date().toISOString().split('T')[0],
+            score: score,
+            questions: questions.length
         }
-
-        function showQuestion() {
-            if (currentQuestion < questions.length) {
-                document.getElementById('question').textContent = questions[currentQuestion];
-            } else {
-                endTest();
-            }
+    }, {
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
         }
-
-        function submitAnswer() {
-            let userAnswer = document.getElementById('answer').value;
-            if (userAnswer === answers[currentQuestion]) {
-                score++;
-            }
-            currentQuestion++;
-            document.getElementById('answer').value = '';
-            showQuestion();
+    }).then(response => {
+        console.log('Results sent to GitHub');
+        console.log('API response:', response);
+    }).catch(error => {
+        console.error('Error sending results to GitHub:', error);
+        if (error.response) {
+            console.error('Error response:', error.response.data);
+            console.error('Status:', error.response.status);
+            console.error('Headers:', error.response.headers);
         }
-
-        function endTest() {
-            document.getElementById('test').style.display = 'none';
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('score').textContent = score + '/' + questions.length;
-            
-            // 发送结果到GitHub
-            sendResultToGitHub();
-        }
-
-        function sendResultToGitHub() {
-            const owner = 'jiushu520';  // 确保这里使用的是正确的 GitHub 用户名
-            const repo = 'online-test-records';
-            const event_type = 'new_test_result';
-            const token = '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';  // 确保这个 Token 是有效的并且有足够的权限
-
-            console.log('Preparing to send result to GitHub for user:', currentUser);
-
-            const payload = {
-                event_type: event_type,
-                client_payload: {
-                    username: currentUser,
-                    date: new Date().toISOString().split('T')[0],
-                    score: score,
-                    questions: questions.length
-                }
-            };
-
-            console.log('Payload:', payload);
-
-            axios.post(`https://api.github.com/repos/${owner}/${repo}/dispatches`, payload, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }).then(response => {
-                console.log('Results sent to GitHub successfully');
-                console.log('API response:', response);
-            }).catch(error => {
-                console.error('Error sending results to GitHub:', error);
-                if (error.response) {
-                    console.error('Error response:', error.response.data);
-                    console.error('Status:', error.response.status);
-                    console.error('Headers:', error.response.headers);
-                } else if (error.request) {
-                    console.error('Error request:', error.request);
-                } else {
-                    console.error('Error message:', error.message);
-                }
-                console.error('Error config:', error.config);
-            });
-        }
-    </script>
-</body>
-</html>
+        console.error('Error config:', error.config);
+    });
+}
